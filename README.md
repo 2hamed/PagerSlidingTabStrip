@@ -1,4 +1,4 @@
-# Android PagerSlidingTabStrip
+# Android PagerSlidingTabStrip with Notification Counter
 This is a modified version of the original library which adds the ability to display a numeral counter for each tab near the title.
  All the credits go to the original author of this amazing library.
  
