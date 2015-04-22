@@ -32,6 +32,7 @@ import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.HorizontalScrollView;
@@ -39,6 +40,8 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import com.astuetz.pagerslidingtabstrip.R;
@@ -47,6 +50,9 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 
 	public interface IconTabProvider {
 		public int getPageIconResId(int position);
+	}
+	public interface NotificationTabProvider{
+		public boolean hasNotification(int position);
 	}
 
 	// @formatter:off
@@ -97,6 +103,8 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 	private int tabBackgroundResId = R.drawable.background_tab;
 
 	private Locale locale;
+
+	private List<TextView> counters = new ArrayList<>();
 
 	public PagerSlidingTabStrip(Context context) {
 		this(context, null);
@@ -196,6 +204,8 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 
 			if (pager.getAdapter() instanceof IconTabProvider) {
 				addIconTab(i, ((IconTabProvider) pager.getAdapter()).getPageIconResId(i));
+			}else if(pager.getAdapter() instanceof NotificationTabProvider && ((NotificationTabProvider)pager.getAdapter()).hasNotification(i)){
+				addTextTabWithNotification(i, pager.getAdapter().getPageTitle(i).toString());
 			} else {
 				addTextTab(i, pager.getAdapter().getPageTitle(i).toString());
 			}
@@ -232,6 +242,27 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 		tab.setSingleLine();
 
 		addTab(position, tab);
+	}
+	private void addTextTabWithNotification(final int position, String titleStr) {
+
+		View tab = LayoutInflater.from(getContext()).inflate(R.layout.notification_text, null, false);
+
+		TextView title = (TextView)tab.findViewById(R.id.title);
+		TextView counter = (TextView)tab.findViewById(R.id.notification);
+
+		counters.add(position, counter);
+		title.setText(titleStr);
+
+		addTab(position, tab);
+	}
+
+	public void updateNotificationCounter(int index, int value){
+		if(value == 0){
+			counters.get(index).setVisibility(GONE);
+		}else{
+			counters.get(index).setVisibility(VISIBLE);
+			counters.get(index).setText(String.valueOf(value));
+		}
 	}
 
 	private void addIconTab(final int position, int resId) {

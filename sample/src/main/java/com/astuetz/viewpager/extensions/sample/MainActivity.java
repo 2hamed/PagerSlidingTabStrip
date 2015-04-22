@@ -46,6 +46,7 @@ public class MainActivity extends FragmentActivity {
 
 	private Drawable oldBackground = null;
 	private int currentColor = 0xFF666666;
+	private int counter = 0;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -133,6 +134,9 @@ public class MainActivity extends FragmentActivity {
 		}
 
 		currentColor = newColor;
+		if(counter >= 15) counter = 0;
+		tabs.updateNotificationCounter(0, counter);
+		counter++;
 
 	}
 
@@ -173,7 +177,7 @@ public class MainActivity extends FragmentActivity {
 		}
 	};
 
-	public class MyPagerAdapter extends FragmentPagerAdapter {
+	public class MyPagerAdapter extends FragmentPagerAdapter implements PagerSlidingTabStrip.NotificationTabProvider{
 
 		private final String[] TITLES = { "Categories", "Home", "Top Paid", "Top Free", "Top Grossing", "Top New Paid",
 				"Top New Free", "Trending" };
@@ -197,6 +201,15 @@ public class MainActivity extends FragmentActivity {
 			return SuperAwesomeCardFragment.newInstance(position);
 		}
 
+		@Override
+		public boolean hasNotification(int position) {
+			switch (position){
+				case 0:
+					return true;
+				default:
+					return false;
+			}
+		}
 	}
 
 }
