@@ -1,4 +1,31 @@
 # Android PagerSlidingTabStrip
+This is a modified version of the original library which adds the ability to display a numeral counter for each tab near the title.
+ All the credits go to the original author of this amazing library.
+ 
+## Usage
+To enable notifications counter for your tabs, your `PagerAdapter` needs to implement `NotificationTabProvider`.
+
+    public class MyPagerAdapter extends FragmentPagerAdapter implements PagerSlidingTabStrip.NotificationTabProvider{
+        .
+        .
+        .
+        @Override
+        public boolean hasNotification(int position) {
+            switch (position){
+                case 0:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+    }
+
+To update the notification counter all you need to do is to 
+call `updateNotificationCounter(int position, int value)` in 
+which `position` would be the respective fragment position and `value` is the number shown above.
+Example's included in the sample project.
+
+# Android PagerSlidingTabStrip
 
 Interactive paging indicator widget, compatible with the `ViewPager` from the 
 Android Support Library. 
