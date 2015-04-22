@@ -29,6 +29,7 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.ActionBarActivity;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -36,7 +37,7 @@ import android.view.View;
 
 import com.astuetz.PagerSlidingTabStrip;
 
-public class MainActivity extends FragmentActivity {
+public class MainActivity extends ActionBarActivity {
 
 	private final Handler handler = new Handler();
 
@@ -105,7 +106,7 @@ public class MainActivity extends FragmentActivity {
 				if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
 					ld.setCallback(drawableCallback);
 				} else {
-					getActionBar().setBackgroundDrawable(ld);
+					getSupportActionBar().setBackgroundDrawable(ld);
 				}
 
 			} else {
@@ -118,7 +119,7 @@ public class MainActivity extends FragmentActivity {
 				if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR1) {
 					td.setCallback(drawableCallback);
 				} else {
-					getActionBar().setBackgroundDrawable(td);
+					getSupportActionBar().setBackgroundDrawable(td);
 				}
 
 				td.startTransition(200);
@@ -128,8 +129,8 @@ public class MainActivity extends FragmentActivity {
 			oldBackground = ld;
 
 			// http://stackoverflow.com/questions/11002691/actionbar-setbackgrounddrawable-nulling-background-from-thread-handler
-			getActionBar().setDisplayShowTitleEnabled(false);
-			getActionBar().setDisplayShowTitleEnabled(true);
+			getSupportActionBar().setDisplayShowTitleEnabled(false);
+			getSupportActionBar().setDisplayShowTitleEnabled(true);
 
 		}
 
@@ -163,7 +164,7 @@ public class MainActivity extends FragmentActivity {
 	private Drawable.Callback drawableCallback = new Drawable.Callback() {
 		@Override
 		public void invalidateDrawable(Drawable who) {
-			getActionBar().setBackgroundDrawable(who);
+			getSupportActionBar().setBackgroundDrawable(who);
 		}
 
 		@Override
