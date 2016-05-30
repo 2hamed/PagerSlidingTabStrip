@@ -40,19 +40,19 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.astuetz.pagerslidingtabstrip.R;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import com.astuetz.pagerslidingtabstrip.R;
-
 public class PagerSlidingTabStrip extends HorizontalScrollView {
 
 	public interface IconTabProvider {
-		public int getPageIconResId(int position);
+		int getPageIconResId(int position);
 	}
 	public interface NotificationTabProvider{
-		public boolean hasNotification(int position);
+		boolean hasNotification(int position);
 	}
 
 	// @formatter:off
