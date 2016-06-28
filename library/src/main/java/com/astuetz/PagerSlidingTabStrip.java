@@ -23,6 +23,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -50,16 +51,19 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 
 	public interface IconTabProvider {
 		int getPageIconResId(int position);
+
+		Drawable getPageIconDrawable(int position);
 	}
-	public interface NotificationTabProvider{
+
+	public interface NotificationTabProvider {
 		boolean hasNotification(int position);
 	}
 
 	// @formatter:off
-	private static final int[] ATTRS = new int[] {
-		android.R.attr.textSize,
-		android.R.attr.textColor
-    };
+	private static final int[] ATTRS = new int[]{
+			android.R.attr.textSize,
+			android.R.attr.textColor
+	};
 	// @formatter:on
 
 	private LinearLayout.LayoutParams defaultTabLayoutParams;
@@ -204,8 +208,13 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 		for (int i = 0; i < tabCount; i++) {
 
 			if (pager.getAdapter() instanceof IconTabProvider) {
-				addIconTab(i, ((IconTabProvider) pager.getAdapter()).getPageIconResId(i));
-			}else if(pager.getAdapter() instanceof NotificationTabProvider && ((NotificationTabProvider)pager.getAdapter()).hasNotification(i)){
+				int resId = ((IconTabProvider) pager.getAdapter()).getPageIconResId(i);
+				if (resId != 0) {
+					addIconTab(i, resId);
+				} else {
+					addIconTab(i, ((IconTabProvider) pager.getAdapter()).getPageIconDrawable(i));
+				}
+			} else if (pager.getAdapter() instanceof NotificationTabProvider && ((NotificationTabProvider) pager.getAdapter()).hasNotification(i)) {
 				addTextTabWithNotification(i, pager.getAdapter().getPageTitle(i).toString());
 			} else {
 				addTextTab(i, pager.getAdapter().getPageTitle(i).toString());
@@ -244,12 +253,13 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 
 		addTab(position, tab);
 	}
+
 	private void addTextTabWithNotification(final int position, String titleStr) {
 
 		View tab = LayoutInflater.from(getContext()).inflate(R.layout.notification_text, null, false);
 
-		TextView title = (TextView)tab.findViewById(R.id.title);
-		TextView counter = (TextView)tab.findViewById(R.id.notification);
+		TextView title = (TextView) tab.findViewById(R.id.title);
+		TextView counter = (TextView) tab.findViewById(R.id.notification);
 
 		counters.add(position, counter);
 		title.setText(titleStr);
@@ -257,10 +267,10 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 		addTab(position, tab);
 	}
 
-	public void updateNotificationCounter(int index, int value){
-		if(value == 0){
+	public void updateNotificationCounter(int index, int value) {
+		if (value == 0) {
 			counters.get(index).setVisibility(GONE);
-		}else{
+		} else {
 			counters.get(index).setVisibility(VISIBLE);
 			counters.get(index).setText(String.valueOf(value));
 		}
@@ -270,6 +280,15 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 
 		ImageButton tab = new ImageButton(getContext());
 		tab.setImageResource(resId);
+
+		addTab(position, tab);
+
+	}
+
+	private void addIconTab(final int position, Drawable drawable) {
+
+		ImageButton tab = new ImageButton(getContext());
+		tab.setImageDrawable(drawable);
 
 		addTab(position, tab);
 
