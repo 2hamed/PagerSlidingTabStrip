@@ -35,9 +35,10 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.HorizontalScrollView;
-import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -107,6 +108,7 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 	private int tabBackgroundResId = R.drawable.background_tab;
 
 	private Locale locale;
+	private int iconSize = dpToPx(24);
 
 	private List<TextView> counters = new ArrayList<>();
 
@@ -209,10 +211,15 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 
 			if (pager.getAdapter() instanceof IconTabProvider) {
 				int resId = ((IconTabProvider) pager.getAdapter()).getPageIconResId(i);
+				CharSequence title = pager.getAdapter().getPageTitle(i);
 				if (resId != 0) {
 					addIconTab(i, resId);
 				} else {
-					addIconTab(i, ((IconTabProvider) pager.getAdapter()).getPageIconDrawable(i));
+					if (title == null) {
+						addIconTab(i, ((IconTabProvider) pager.getAdapter()).getPageIconDrawable(i));
+					} else {
+						addIconTabWithText(i, ((IconTabProvider) pager.getAdapter()).getPageIconDrawable(i), title.toString());
+					}
 				}
 			} else if (pager.getAdapter() instanceof NotificationTabProvider && ((NotificationTabProvider) pager.getAdapter()).hasNotification(i)) {
 				addTextTabWithNotification(i, pager.getAdapter().getPageTitle(i).toString());
@@ -277,21 +284,41 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 	}
 
 	private void addIconTab(final int position, int resId) {
-
-		ImageButton tab = new ImageButton(getContext());
+		LinearLayout layout = new LinearLayout(getContext());
+		layout.setGravity(Gravity.CENTER);
+		ImageView tab = new ImageView(getContext());
 		tab.setImageResource(resId);
-
-		addTab(position, tab);
-
+		tab.setLayoutParams(new LinearLayout.LayoutParams(iconSize, iconSize));
+		layout.addView(tab);
+		addTab(position, layout);
 	}
 
 	private void addIconTab(final int position, Drawable drawable) {
-
-		ImageButton tab = new ImageButton(getContext());
+		LinearLayout layout = new LinearLayout(getContext());
+		layout.setGravity(Gravity.CENTER);
+		ImageView tab = new ImageView(getContext());
 		tab.setImageDrawable(drawable);
+		tab.setLayoutParams(new LinearLayout.LayoutParams(iconSize, iconSize));
+		layout.addView(tab);
+		addTab(position, layout);
+	}
 
-		addTab(position, tab);
+	private void addIconTabWithText(final int position, Drawable drawable, String text) {
+		LinearLayout layout = new LinearLayout(getContext());
+		layout.setGravity(Gravity.CENTER);
+		layout.setOrientation(LinearLayout.VERTICAL);
 
+		ImageView tab = new ImageView(getContext());
+		tab.setImageDrawable(drawable);
+		tab.setLayoutParams(new LinearLayout.LayoutParams(iconSize, iconSize));
+
+		TextView textView = new TextView(getContext());
+		textView.setText(text);
+		textView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+		textView.setTextColor(getTextColor());
+		layout.addView(tab);
+		layout.addView(textView);
+		addTab(position, layout);
 	}
 
 	private void addTab(final int position, View tab) {
@@ -628,6 +655,12 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 				return new SavedState[size];
 			}
 		};
+	}
+
+	public int dpToPx(int dp) {
+		return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
+		                                       dp,
+		                                       getContext().getResources().getDisplayMetrics());
 	}
 
 }
