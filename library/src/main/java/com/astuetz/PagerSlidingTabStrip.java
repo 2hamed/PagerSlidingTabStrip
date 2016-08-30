@@ -110,6 +110,8 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 	private Locale locale;
 	private int iconSize = dpToPx(24);
 
+	private int iconColorFilter = 0;
+
 	private List<TextView> counters = new ArrayList<>();
 
 	public PagerSlidingTabStrip(Context context) {
@@ -289,6 +291,9 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 		ImageView tab = new ImageView(getContext());
 		tab.setImageResource(resId);
 		tab.setLayoutParams(new LinearLayout.LayoutParams(iconSize, iconSize));
+		if (iconColorFilter != 0) {
+			tab.setColorFilter(iconColorFilter);
+		}
 		layout.addView(tab);
 		addTab(position, layout);
 	}
@@ -298,6 +303,9 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 		layout.setGravity(Gravity.CENTER);
 		ImageView tab = new ImageView(getContext());
 		tab.setImageDrawable(drawable);
+		if (iconColorFilter != 0) {
+			tab.setColorFilter(iconColorFilter);
+		}
 		tab.setLayoutParams(new LinearLayout.LayoutParams(iconSize, iconSize));
 		layout.addView(tab);
 		addTab(position, layout);
@@ -311,7 +319,9 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 		ImageView tab = new ImageView(getContext());
 		tab.setImageDrawable(drawable);
 		tab.setLayoutParams(new LinearLayout.LayoutParams(iconSize, iconSize));
-
+		if (iconColorFilter != 0) {
+			tab.setColorFilter(iconColorFilter);
+		}
 		TextView textView = new TextView(getContext());
 		textView.setText(text);
 		textView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -477,6 +487,14 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 	public void setIndicatorColorResource(int resId) {
 		this.indicatorColor = getResources().getColor(resId);
 		invalidate();
+	}
+
+	public int getIconColorFilter() {
+		return iconColorFilter;
+	}
+
+	public void setIconColorFilter(int iconColorFilter) {
+		this.iconColorFilter = iconColorFilter;
 	}
 
 	public int getIndicatorColor() {
