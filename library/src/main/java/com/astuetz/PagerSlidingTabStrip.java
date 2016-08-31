@@ -22,6 +22,7 @@ import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
+import android.graphics.Point;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -32,11 +33,13 @@ import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.util.TypedValue;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
+import android.view.WindowManager;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -111,6 +114,8 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 	private int iconSize = dpToPx(24);
 
 	private int iconColorFilter = 0;
+
+	private int screenWidth = 0;
 
 	private List<TextView> counters = new ArrayList<>();
 
@@ -195,7 +200,7 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 		}
 
 		pager.addOnPageChangeListener(pageListener);
-
+		getScreenDimensions();
 		notifyDataSetChanged();
 	}
 
@@ -315,6 +320,9 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 		LinearLayout layout = new LinearLayout(getContext());
 		layout.setGravity(Gravity.CENTER);
 		layout.setOrientation(LinearLayout.VERTICAL);
+		LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(screenWidth / tabCount, ViewGroup.LayoutParams.MATCH_PARENT);
+		layoutParams.gravity = Gravity.CENTER;
+		layout.setLayoutParams(layoutParams);
 
 		ImageView tab = new ImageView(getContext());
 		tab.setImageDrawable(drawable);
@@ -340,7 +348,7 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 			}
 		});
 
-		tab.setPadding(tabPadding, 0, tabPadding, 0);
+		//tab.setPadding(tabPadding, 0, tabPadding, 0);
 		tabsContainer.addView(tab, position, shouldExpand ? expandedTabLayoutParams : defaultTabLayoutParams);
 	}
 
@@ -679,6 +687,14 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 		return (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
 		                                       dp,
 		                                       getContext().getResources().getDisplayMetrics());
+	}
+
+	public void getScreenDimensions() {
+		WindowManager wm = (WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE);
+		Display display = wm.getDefaultDisplay();
+		Point size = new Point();
+		display.getSize(size);
+		screenWidth = size.x;
 	}
 
 }
