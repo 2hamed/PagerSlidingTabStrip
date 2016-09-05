@@ -100,6 +100,7 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 	private int dividerPadding = 12;
 	private int tabPadding = 24;
 	private int dividerWidth = 1;
+	private boolean fitWindow = false;
 
 	private int tabTextSize = 12;
 	private int tabTextColor = 0xFF666666;
@@ -258,6 +259,14 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 
 	}
 
+	public boolean isFitWindow() {
+		return fitWindow;
+	}
+
+	public void setFitWindow(boolean fitWindow) {
+		this.fitWindow = fitWindow;
+	}
+
 	private void addTextTab(final int position, String title) {
 
 		TextView tab = new TextView(getContext());
@@ -320,9 +329,11 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 		LinearLayout layout = new LinearLayout(getContext());
 		layout.setGravity(Gravity.CENTER);
 		layout.setOrientation(LinearLayout.VERTICAL);
-		LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(screenWidth / tabCount, ViewGroup.LayoutParams.MATCH_PARENT);
-		layoutParams.gravity = Gravity.CENTER;
-		layout.setLayoutParams(layoutParams);
+		if (fitWindow) {
+			LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(screenWidth / tabCount, ViewGroup.LayoutParams.MATCH_PARENT);
+			layoutParams.gravity = Gravity.CENTER;
+			layout.setLayoutParams(layoutParams);
+		}
 
 		ImageView tab = new ImageView(getContext());
 		tab.setImageDrawable(drawable);
@@ -348,7 +359,7 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 			}
 		});
 
-		//tab.setPadding(tabPadding, 0, tabPadding, 0);
+		tab.setPadding(tabPadding, 0, tabPadding, 0);
 		tabsContainer.addView(tab, position, shouldExpand ? expandedTabLayoutParams : defaultTabLayoutParams);
 	}
 
