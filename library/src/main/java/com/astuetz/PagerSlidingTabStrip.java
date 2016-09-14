@@ -16,10 +16,13 @@
 
 package com.astuetz;
 
+import android.animation.ArgbEvaluator;
+import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
 import android.graphics.Point;
@@ -52,6 +55,8 @@ import java.util.List;
 import java.util.Locale;
 
 public class PagerSlidingTabStrip extends HorizontalScrollView {
+	private static final String TAG = "PagerSlidingTabStrip";
+	private boolean hasIcon = false;
 
 	public interface IconTabProvider {
 		int getPageIconResId(int position);
@@ -117,6 +122,17 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 	private int iconColorFilter = 0;
 
 	private int screenWidth = 0;
+	private int linePaddingFromBottom = 0;
+
+	//8C9BBE
+	int colorFilterActive, colorFilterInActive;
+	ValueAnimator tintAnimator, unTintAnimator;
+	long animationPlayTime = 5000L;
+
+	ImageView currentIcon, nextIcon;
+	List<ImageView> icons = new ArrayList<>();
+	TextView currentText, nextText;
+	List<TextView> textViews = new ArrayList<>();
 
 	private List<TextView> counters = new ArrayList<>();
 
@@ -191,7 +207,47 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 		if (locale == null) {
 			locale = getResources().getConfiguration().locale;
 		}
+
+
 	}
+
+	public void setColorFilters(int colorFilterActive,
+	                            int colorFilterInActive,
+	                            long animationPlayTime) {
+		this.colorFilterActive = colorFilterActive;
+		this.colorFilterInActive = colorFilterInActive;
+		this.iconColorFilter = colorFilterInActive;
+		this.animationPlayTime = animationPlayTime;
+
+		tintAnimator = ValueAnimator.ofObject(new ArgbEvaluator(), colorFilterInActive, colorFilterActive);
+		unTintAnimator = ValueAnimator.ofObject(new ArgbEvaluator(), colorFilterActive, colorFilterInActive);
+
+		tintAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+			@Override
+			public void onAnimationUpdate(ValueAnimator animation) {
+				if (nextIcon != null) {
+					nextIcon.setColorFilter((int) animation.getAnimatedValue());
+				}
+				if (nextText != null) {
+					nextText.setTextColor((int) animation.getAnimatedValue());
+				}
+			}
+		});
+		unTintAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+			@Override
+			public void onAnimationUpdate(ValueAnimator animation) {
+				if (currentIcon != null) {
+					currentIcon.setColorFilter((int) animation.getAnimatedValue());
+				}
+				if (currentText != null) {
+					currentText.setTextColor((int) animation.getAnimatedValue());
+				}
+			}
+		});
+		tintAnimator.setDuration(animationPlayTime);
+		unTintAnimator.setDuration(animationPlayTime);
+	}
+
 
 	public void setViewPager(ViewPager pager) {
 		this.pager = pager;
@@ -220,6 +276,7 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 			if (pager.getAdapter() instanceof IconTabProvider) {
 				int resId = ((IconTabProvider) pager.getAdapter()).getPageIconResId(i);
 				CharSequence title = pager.getAdapter().getPageTitle(i);
+				hasIcon = true;
 				if (resId != 0) {
 					addIconTab(i, resId);
 				} else {
@@ -275,6 +332,10 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 		tab.setSingleLine();
 
 		addTab(position, tab);
+		textViews.add(tab);
+		if (iconColorFilter != 0) {
+			tab.setTextColor(iconColorFilter);
+		}
 	}
 
 	private void addTextTabWithNotification(final int position, String titleStr) {
@@ -286,8 +347,11 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 
 		counters.add(position, counter);
 		title.setText(titleStr);
-
+		textViews.add(title);
 		addTab(position, tab);
+		if (iconColorFilter != 0) {
+			title.setTextColor(iconColorFilter);
+		}
 	}
 
 	public void updateNotificationCounter(int index, int value) {
@@ -297,6 +361,10 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 			counters.get(index).setVisibility(VISIBLE);
 			counters.get(index).setText(String.valueOf(value));
 		}
+	}
+
+	public void setLinePaddingFromBottom(int linePaddingFromBottom) {
+		this.linePaddingFromBottom = linePaddingFromBottom;
 	}
 
 	private void addIconTab(final int position, int resId) {
@@ -310,6 +378,7 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 		}
 		layout.addView(tab);
 		addTab(position, layout);
+		icons.add(tab);
 	}
 
 	private void addIconTab(final int position, Drawable drawable) {
@@ -323,6 +392,7 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 		tab.setLayoutParams(new LinearLayout.LayoutParams(iconSize, iconSize));
 		layout.addView(tab);
 		addTab(position, layout);
+		icons.add(tab);
 	}
 
 	private void addIconTabWithText(final int position, Drawable drawable, String text) {
@@ -338,9 +408,7 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 		ImageView tab = new ImageView(getContext());
 		tab.setImageDrawable(drawable);
 		tab.setLayoutParams(new LinearLayout.LayoutParams(iconSize, iconSize));
-		if (iconColorFilter != 0) {
-			tab.setColorFilter(iconColorFilter);
-		}
+
 		TextView textView = new TextView(getContext());
 		textView.setText(text);
 		textView.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -348,6 +416,12 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 		layout.addView(tab);
 		layout.addView(textView);
 		addTab(position, layout);
+		icons.add(tab);
+		textViews.add(textView);
+		if (iconColorFilter != 0) {
+			tab.setColorFilter(iconColorFilter);
+			textView.setTextColor(iconColorFilter);
+		}
 	}
 
 	private void addTab(final int position, View tab) {
@@ -445,7 +519,7 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 			lineRight = (currentPositionOffset * nextTabRight + (1f - currentPositionOffset) * lineRight);
 		}
 
-		canvas.drawRect(lineLeft, height - indicatorHeight, lineRight, height, rectPaint);
+		canvas.drawRect(lineLeft, height - indicatorHeight - linePaddingFromBottom, lineRight, height - linePaddingFromBottom, rectPaint);
 
 		// draw underline
 
@@ -461,7 +535,9 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 		}
 	}
 
+
 	private class PageListener implements OnPageChangeListener {
+		float prevOffset = 0;
 
 		@Override
 		public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -476,6 +552,38 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 			if (delegatePageListener != null) {
 				delegatePageListener.onPageScrolled(position, positionOffset, positionOffsetPixels);
 			}
+			if (tintAnimator != null) {
+				float delta = positionOffset != 0 ? positionOffset - prevOffset : 0;
+				prevOffset = positionOffset;
+				if (delta > 0) {
+					if (icons.size() > 0) {
+						currentIcon = icons.get(position);
+						nextIcon = icons.get(position + 1);
+					}
+					if (textViews.size() > 0) {
+						currentText = textViews.get(position);
+						nextText = textViews.get(position + 1);
+					}
+					tintAnimator.setCurrentPlayTime((long) (positionOffset * animationPlayTime));
+					unTintAnimator.setCurrentPlayTime((long) (positionOffset * animationPlayTime));
+				} else if (delta < 0) {
+					if (icons.size() > 0) {
+						currentIcon = icons.get(position + 1);
+						nextIcon = icons.get(position);
+					}
+					if (textViews.size() > 0) {
+						currentText = textViews.get(position + 1);
+						nextText = textViews.get(position);
+					}
+					unTintAnimator.setCurrentPlayTime((long) ((1 - positionOffset) * animationPlayTime));
+					tintAnimator.setCurrentPlayTime((long) ((1 - positionOffset) * animationPlayTime));
+				}
+				if (delta == 0) {
+					icons.get(pager.getCurrentItem()).setColorFilter(Color.WHITE);
+					textViews.get(pager.getCurrentItem()).setTextColor(Color.WHITE);
+				}
+			}
+
 		}
 
 		@Override
@@ -513,7 +621,8 @@ public class PagerSlidingTabStrip extends HorizontalScrollView {
 	}
 
 	public void setIconColorFilter(int iconColorFilter) {
-		this.iconColorFilter = iconColorFilter;
+//		this.iconColorFilter = iconColorFilter;
+		this.iconColorFilter = Color.parseColor("#333333");
 	}
 
 	public int getIndicatorColor() {
